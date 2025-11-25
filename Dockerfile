@@ -96,5 +96,23 @@ EXPOSE 80
 
 USER root
 
+# 更新 apk 包索引并安装必要的依赖
+RUN apk update && \
+    apk add --no-cache \
+        curl \
+        unzip \
+        python3 \
+        py3-pip \
+        groff \
+        less \
+        jq && \
+    # 安装 AWS CLI v1（更兼容 Alpine）
+    pip3 install --no-cache-dir awscli && \
+    # 清理缓存
+    rm -rf /var/cache/apk/* /root/.cache/pip
+
+# 验证 AWS CLI 安装
+RUN aws --version
+
 ENTRYPOINT ["tini", "-g", "--"]
 CMD ["kubepi-server","-c", "/etc/kubepi" ,"--server-bind-host","0.0.0.0","--server-bind-port","80"]
